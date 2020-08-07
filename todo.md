@@ -30,7 +30,7 @@
 * [ ] clock?
 
 # Memory
-* [ ] implement memory map
+* [x] implement memory map
 
 
 # Graphics

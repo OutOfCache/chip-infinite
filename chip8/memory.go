@@ -1,14 +1,13 @@
 package chip8
 
 type Memory struct {
-    var mem = [4096]byte
+    var mem [4096]byte
 }
 
-// TODO: read and write functions
 func (mem Memory) read(adr uint16) byte {
-    // TODO
+    return mem[adr]
 }
 
 func (mem Memory) write(adr uint16, val byte) {
-    // TODO
+    mem[adr] = val
 }
