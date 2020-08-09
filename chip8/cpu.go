@@ -205,6 +205,21 @@ func (cpu *CPU) cpuC() {
 func (cpu *CPU) cpuD() {
     // Dxyn: DRW Vx, Vy, nibble - display n-byte sprite starting at mem location I
     // at (Vx, Vy), set VF = collision
+    var x byte = (cpu.opcode & 0x0F00) >> 8
+    var y byte = (cpu.opcode & 0x00F0) >> 4
+    var n byte = (cpu.opcode & 0x000F)
+
+    for var h byte = 0; h < n; h++ {
+	var curbyte byte = mem.Read(cpu.I + h)
+	for var w byte = 0; w < 8; w++ {
+	    if curbyte &(0x8000 >> w) != 0 {
+		if dispay[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] != 0 {
+		    cpu.V[16] = 1
+		}
+		display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] ^= 1
+	    }
+	}
+    }
 
 }
 
