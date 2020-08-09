@@ -154,11 +154,7 @@ func (cpu *CPU) cpuEightFive() {
 func (cpu *CPU) cpuEightSix() {
     // 8xy6: SHR Vx
     var x byte = cpu.opcode & 0x0F00 >> 8
-    if cpu.V[x] & 0x0001 == 1 {
-	cpu.V[16] = 1
-    } else {
-	cpu.V[16] = 0
-    }
+    cpu.V[16] = cpu.V[x] & 0x0001
     cpu.V[x] = cpu.V[x] >> 1
 }
 
@@ -177,11 +173,7 @@ func (cpu *CPU) cpuEightSeven() {
 func (cpu *CPU) cpuEightE() {
     // 8xyE: SHL Vx
     var x byte = cpu.opcode & 0x0F00 >> 8
-    if cpu.V[x] & 0x8000 == 1 {
-	cpu.V[16] = 1
-    } else {
-	cpu.V[16] = 0
-    }
+    cpu.V[16] = cpu.V[x] & 0x8000
     cpu.V[x] = cpu.V[x] << 1
 }
 
@@ -222,7 +214,38 @@ func (cpu *CPU) cpuE() {
 }
 
 func (cpu *CPU) cpuF() {
+    switch cpu.opcode & 0x00FF {
+	case 0x07: // Fx07: LD Vx, DT - set Vx = delay timer value
+	    cpu.V[(cpu.opcode & 0x0F00) >> 8] = cpu.delay_timer
+	case 0x0A: // Fx0A: LD Vx, K - wait for a key press, store the key in Vx
+	    // TODO
+	case 0x15: // Fx15: Ld DT, Vx - set delay timer = Vx
+	    cpu.delay_timer = cpu.V[(cpu.opcode & 0x0F00) >> 8]
+	case 0x18: // Fx18: LD ST, Vx - set sound timer = Vx
+	    cpu.sound_timer = cpu.V[(cpu.opcode & 0x0F00) >> 8]
+	case 0x1E: // Fx1E: ADD I, Vx - I = I + Vx
+	    cpu.I += cpu.V[(cpu.opcode & 0x0F00) >> 8] 
+	case 0x29: // Fx29: LD F, Vx - set I = location of sprite for digit Vx
+	    // TODO
+	case 0x33: // Fx33: LD B, Vx - store BCD of Vx in memory locations I, I+1, I+2
+	    // TODO
+	case 0x55: // Fx55: LD [I], Vx - store registers V0 to Vx in memory 
+		//	starting at the address in I
+	    var x byte = (cpu.opcode & 0x0F00) >> 8
+	    for var i byte = 0; i <= x; i++ {
+	        mem.Write(cpu.I + i, cpu.V[i])
+	    }
+	case 0x65: // Fx65: LD Vx, [I] - read registers V0 through Vx from memory
+			//	starting at location I
+	    var x byte = (cpu.opcode & 0x0F00) >> 8
+	    for var i byte = 0; i <= x; i++ {
+	        cpu.V[i] = mem.Read(cpu.I + i)
+	    }
+    }
 }
 
+
+
 func (cpu *CPU) cpuNull() {
+    // do nothing
 }
