@@ -27,7 +27,8 @@
 # CPU
 * [ ] implement instructions
 * [x] set up registers
-* [ ] clock?
+* [ ] learn how to properly write tests (in go specifically)
+* [ ] write tests for instructions
 
 # Memory
 * [x] implement memory map
@@ -36,7 +37,20 @@
 # Graphics
 * [ ] research how to implement graphics
 * [ ] research SDL
-* [ ] set up screen (64x32 = 2048 px, bw, boolean)
+* [x] set up screen (64x32 = 2048 px, bw, boolean)
+* [ ] read [Lazy Foo's Tutorials](http://lazyfoo.net/tutorials/SDL/)  
+  * [x] Lesson 01
+  * [x] Lesson 02
+  * [x] Lesson 03
+  * [x] Lesson 04
+  * [x] Lesson 05
+  * [x] Lesson 06
+  * [x] Lesson 07
+  * [ ] Lesson 08
+  * [ ] Lesson 11
+  * [ ] Lesson 18
+  * [ ] Lesson 19
+  * [ ] Lesson 21
 
 # Input
 * [ ] set up hex based keypad
