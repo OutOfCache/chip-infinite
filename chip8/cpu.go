@@ -1,36 +1,54 @@
 package chip8
 
 import (
-    "fmt"
     "math/rand"
+    "time"
 )
 
 type CPU struct {
     // registers
-    var V [16]byte
-    var I uint16
-    var PC uint16
+    V [16]byte
+    I uint16
+    PC uint16
     // memory
     Memory
     // stack
-    var stack [16]uint16
-    var sp byte
+    stack [16]uint16
+    sp byte
     // instructions?
-    var opcode uint16
-    ops :=  [16]func(){
-	cpuZero, cpuOne, cpuTwo, cpuThree, cpuFour, cpuFive, cpuSix, cpuSeven,
-	cpuEight[(opcode & 0x000F)], cpuNine, cpuA, cpuB, cpuC, cpuD, cpuE, cpuF
-    }
-
+    opcode uint16
     // timer registers
-    var delay_timer byte
-    var sound_timer byte
+    delay_timer byte
+    sound_timer byte
+    ops [16]func()
+    cpuEight [16]func()
 
 }
 
+
+// the following code is mostly derived from github.com/fogleman/nes
+
+func NewCPU() CPU{
+    var cpu CPU
+    cpu.cpuEight = [16]func() {
+        cpu.cpuEightZero, cpu.cpuEightOne, cpu.cpuEightTwo, cpu.cpuEightThree,
+        cpu.cpuEightFour, cpu.cpuEightFive, cpu.cpuEightSix, cpu.cpuEightSeven,
+        cpu.cpuNull, cpu.cpuNull, cpu.cpuNull, cpu.cpuNull,
+        cpu.cpuNull, cpu.cpuNull, cpu.cpuEightE, cpu.cpuNull,
+    }
+    cpu.ops = [16]func(){
+        cpu.cpuZero, cpu.cpuOne, cpu.cpuTwo, cpu.cpuThree,
+	cpu.cpuFour, cpu.cpuFive, cpu.cpuSix, cpu.cpuSeven,
+        cpu.cpuEight[(cpu.opcode & 0x000F)], cpu.cpuNine, cpu.cpuA, cpu.cpuB,
+	cpu.cpuC, cpu.cpuD, cpu.cpuE, cpu.cpuF,
+    }
+    return cpu
+}
+
+
 // fetch instruction
 func (cpu *CPU) Fetch() {
-    cpu.opcode = cpu.Read([cpu.PC]) << 8 | cpu.Read([cpu.PC + 1])
+    cpu.opcode = uint16(cpu.Read(cpu.PC)) << 8 + uint16(cpu.Read(cpu.PC + 1))
     cpu.PC += 2
 }
 // decode and execute opcode
@@ -49,6 +67,7 @@ func (cpu *CPU) cpuZero() {
 	// Returns from subroutine
     default:
 	// 0nnn: SYS addr
+    }
 }
 
 func (cpu *CPU) cpuOne() {
@@ -65,7 +84,7 @@ func (cpu *CPU) cpuTwo() {
 
 func (cpu *CPU) cpuThree() {
     // 3xkk: Skip next instruction if Vx = kk
-    var kk byte = opcode & 0x00FF
+    var kk byte = byte(cpu.opcode & 0x00FF)
     if cpu.V[(cpu.opcode & 0x0F00) >> 8] == kk {
 	cpu.PC += 2
     }
@@ -73,7 +92,7 @@ func (cpu *CPU) cpuThree() {
 
 func (cpu *CPU) cpuFour() {
     // 4xkk: Skip next instruction if Vx != kk
-    var kk byte = opcode & 0x00FF
+    var kk byte = byte(cpu.opcode & 0x00FF)
     if cpu.V[(cpu.opcode & 0x0F00) >> 8] != kk {
 	cpu.PC += 2
     }
@@ -88,22 +107,16 @@ func (cpu *CPU) cpuFive() {
 
 func (cpu *CPU) cpuSix() {
     // 6xkk: LD Vx, byte - set Vx = byte
-    var kk byte = cpu.opcode & 0x00FF
+    var kk byte = byte(cpu.opcode & 0x00FF)
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = kk
 }
 
 func (cpu *CPU) cpuSeven() {
     // 7xkk: ADD Vx, byte - set Vx = Vx + kk
-    var kk byte = cpu.opcode & 0x00FF
+    var kk byte = byte(cpu.opcode & 0x00FF)
     cpu.V[(cpu.opcode & 0x0F00) >> 8] += kk
 }
 
-var cpuEight = [16]func() {
-    cpuEightZero, cpuEightOne, cpuEightTwo, cpuEightThree,
-    cpuEightFour, cpuEightFive, cpuEightSix, cpuEightSeven,
-    cpuNull, cpuNull, cpuNull, cpuNull,
-    cpuNull, cpuNull, cpuEightE, cpuNull
-}
 
 func (cpu *CPU) cpuEightZero() {
     // 8xy0: LD Vx, Vy - Set Vx = Vy
@@ -112,49 +125,49 @@ func (cpu *CPU) cpuEightZero() {
 
 func (cpu *CPU) cpuEightOne() {
     // 8xy1: OR Vx, Vy - set Vx = Vx OR Vy
-    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] | cpu.V[(cpu.opcode & 0x00F0 >> 4]
+    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] | cpu.V[(cpu.opcode & 0x00F0 >> 4)]
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = result
 }
 
 func (cpu *CPU) cpuEightTwo() {
     // 8xy2: AND Vx, Vy - set Vx = Vx AND Vy
-    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] & cpu.V[(cpu.opcode & 0x00F0 >> 4]
+    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] & cpu.V[(cpu.opcode & 0x00F0 >> 4)]
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = result
 }
 
 func (cpu *CPU) cpuEightThree() {
     // 8xy3: XOR Vx, Vy - set Vx = Vx XOR Vy
-    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] ^ cpu.V[(cpu.opcode & 0x00F0 >> 4]
+    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] ^ cpu.V[(cpu.opcode & 0x00F0 >> 4)]
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = result
 }
 
 func (cpu *CPU) cpuEightFour() {
     // 8xy4: ADD Vx, Vy - set Vx = Vx + Vy; VF = carry
-    var result uint16 = cpu.V[(cpu.opcode & 0x0F00) >> 8] + cpu.V[(cpu.opcode & 0x00F0 >> 4]
+    var result uint16 = uint16(cpu.V[(cpu.opcode & 0x0F00) >> 8]) + uint16(cpu.V[(cpu.opcode & 0x00F0 >> 4)])
     if result > 0x00FF {
-	cpu.V[16] = 1
+	cpu.V[15] = 1
     } else {
-	cpu.V[16] = 0
+	cpu.V[15] = 0
     }
-    cpu.V[(cpu.opcode & 0x0F00) >> 8] = result & 0x00FF
+    cpu.V[(cpu.opcode & 0x0F00) >> 8] = byte(result & 0x00FF)
 }
 
 func (cpu *CPU) cpuEightFive() {
     // 8xy5: SUB Vx, Vy - set Vx = Vx - Vy; VF = NOT borrow
     // Is this using - or + with two's complement?
     if cpu.V[(cpu.opcode & 0x0F00) >> 8] > cpu.V[(cpu.opcode & 0x00F0) >> 4] {
-	cpu.V[16] = 1
+	cpu.V[15] = 1
     } else {
-	cpu.V[16] = 0
+	cpu.V[15] = 0
     }
-    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] - cpu.V[(cpu.opcode & 0x00F0 >> 4]
+    var result byte = cpu.V[(cpu.opcode & 0x0F00) >> 8] - cpu.V[(cpu.opcode & 0x00F0 >> 4)]
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = result
 }
 
 func (cpu *CPU) cpuEightSix() {
     // 8xy6: SHR Vx
-    var x byte = cpu.opcode & 0x0F00 >> 8
-    cpu.V[16] = cpu.V[x] & 0x0001
+    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
+    cpu.V[15] = cpu.V[x] & 0x0001
     cpu.V[x] = cpu.V[x] >> 1
 }
 
@@ -162,18 +175,18 @@ func (cpu *CPU) cpuEightSeven() {
     // 8xy7: SUBN Vx, Vy - set Vx = Vy - Vx; VF = NOT borrow
     // Is this using - or + with two's complement?
     if cpu.V[(cpu.opcode & 0x00F0) >> 4] > cpu.V[(cpu.opcode & 0x0F00) >> 8] {
-	cpu.V[16] = 1
+	cpu.V[15] = 1
     } else {
-	cpu.V[16] = 0
+	cpu.V[15] = 0
     }
-    var result byte = cpu.V[(cpu.opcode & 0x00F0) >> 4] - cpu.V[(cpu.opcode & 0x0F00 >> 8]
+    var result byte = cpu.V[(cpu.opcode & 0x00F0) >> 4] - cpu.V[(cpu.opcode & 0x0F00 >> 8)]
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = result
 }
 
 func (cpu *CPU) cpuEightE() {
     // 8xyE: SHL Vx
-    var x byte = cpu.opcode & 0x0F00 >> 8
-    cpu.V[16] = cpu.V[x] & 0x8000
+    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
+    cpu.V[15] = cpu.V[x] & 0x80
     cpu.V[x] = cpu.V[x] << 1
 }
 
@@ -191,36 +204,35 @@ func (cpu *CPU) cpuA() {
 
 func (cpu *CPU) cpuB() {
     // Bnnn: JP V0, addr - Jump to location nnn + V0
-    cpu.PC = (cpu.opcode & 0x0FFF) + cpu.V[0]
+    cpu.PC = (cpu.opcode & 0x0FFF) + uint16(cpu.V[0])
 }
 
 func (cpu *CPU) cpuC() {
     // Cxkk: RND Vx, byte - Vx = gen rand numb 0-255 & kk
     rand.Seed(time.Now().UnixNano())
-    var rand byte = rand.Int(255) & 0x000F
-    var kk byte = cpu.opcode & 0x00FF
+    var rand byte = byte(rand.Intn(255) & 0x000F)
+    var kk byte = byte(cpu.opcode & 0x00FF)
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = rand & kk
 }
 
 func (cpu *CPU) cpuD() {
     // Dxyn: DRW Vx, Vy, nibble - display n-byte sprite starting at mem location I
     // at (Vx, Vy), set VF = collision
-    var x byte = (cpu.opcode & 0x0F00) >> 8
-    var y byte = (cpu.opcode & 0x00F0) >> 4
-    var n byte = (cpu.opcode & 0x000F)
+    var x byte = byte((cpu.opcode & 0x0F00) >> 8)
+    var y byte = byte((cpu.opcode & 0x00F0) >> 4)
+    var n byte = byte((cpu.opcode & 0x000F))
 
-    for var h byte = 0; h < n; h++ {
-	var curbyte byte = mem.Read(cpu.I + h)
-	for var w byte = 0; w < 8; w++ {
-	    if curbyte &(0x8000 >> w) != 0 {
-		if dispay[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] != 0 {
-		    cpu.V[16] = 1
+    for h := byte(0); h < n; h++ {
+	var curbyte byte = cpu.Read(cpu.I + uint16(h))
+	for w := byte(0); w < 8; w++ {
+	    if curbyte & 0x80 >> w != 0 {
+		if display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] != 0 {
+		    cpu.V[15] = 1
 		}
 		display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] ^= 1
 	    }
 	}
     }
-
 }
 
 func (cpu *CPU) cpuE() {
@@ -239,27 +251,25 @@ func (cpu *CPU) cpuF() {
 	case 0x18: // Fx18: LD ST, Vx - set sound timer = Vx
 	    cpu.sound_timer = cpu.V[(cpu.opcode & 0x0F00) >> 8]
 	case 0x1E: // Fx1E: ADD I, Vx - I = I + Vx
-	    cpu.I += cpu.V[(cpu.opcode & 0x0F00) >> 8] 
+	    cpu.I += uint16(cpu.V[(cpu.opcode & 0x0F00) >> 8])
 	case 0x29: // Fx29: LD F, Vx - set I = location of sprite for digit Vx
 	    // TODO
 	case 0x33: // Fx33: LD B, Vx - store BCD of Vx in memory locations I, I+1, I+2
 	    // TODO
 	case 0x55: // Fx55: LD [I], Vx - store registers V0 to Vx in memory 
 		//	starting at the address in I
-	    var x byte = (cpu.opcode & 0x0F00) >> 8
-	    for var i byte = 0; i <= x; i++ {
-	        mem.Write(cpu.I + i, cpu.V[i])
+	    var x byte = byte((cpu.opcode & 0x0F00) >> 8)
+	    for i := uint16(0); i <= uint16(x); i++ {
+	        cpu.Write(cpu.I + i, cpu.V[i])
 	    }
 	case 0x65: // Fx65: LD Vx, [I] - read registers V0 through Vx from memory
 			//	starting at location I
-	    var x byte = (cpu.opcode & 0x0F00) >> 8
-	    for var i byte = 0; i <= x; i++ {
-	        cpu.V[i] = mem.Read(cpu.I + i)
+	    var x byte = byte((cpu.opcode & 0x0F00) >> 8)
+	    for i := byte(0); i <= x; i++ {
+	        cpu.V[i] = cpu.Read(cpu.I + uint16(i))
 	    }
     }
 }
-
-
 
 func (cpu *CPU) cpuNull() {
     // do nothing
