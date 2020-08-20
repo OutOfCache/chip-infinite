@@ -59,7 +59,7 @@ func TestCpuThree(t *testing.T) {
 	cpu.PC = test.pc
 	cpu.cpuThree()
 	if cpu.PC != test.expected {
-	    t.Error("Test failed: opcode {}, Vx: {}, expected: {}, received: {}", test.opcode, test.vx, test.expected, cpu.PC)
+	    t.Errorf("Test failed: opcode %x, Vx: %x, expected: %x, received: %x", test.opcode, test.vx, test.expected, cpu.PC)
 	}
     }
 }
@@ -80,9 +80,9 @@ func TestCpuFour(t *testing.T) {
 	cpu.opcode = test.opcode
 	cpu.V[(cpu.opcode & 0x0F00) >> 8] = test.vx
 	cpu.PC = test.pc
-	cpu.cpuThree()
+	cpu.cpuFour()
 	if cpu.PC != test.expected {
-	    t.Error("Test failed: opcode {}, Vx: {}, expected: {}, received: {}", test.opcode, test.vx, test.expected, cpu.PC)
+	    t.Errorf("Test failed: opcode %x, Vx: %x, expected: %x, received: %x", test.opcode, test.vx, test.expected, cpu.PC)
 	}
     }
 }
@@ -105,9 +105,9 @@ func TestCpuFive(t *testing.T) {
 	cpu.V[(cpu.opcode & 0x0F00) >> 8] = test.vx
 	cpu.V[(cpu.opcode & 0x00F0) >> 4] = test.vy
 	cpu.PC = test.pc
-	cpu.cpuThree()
+	cpu.cpuFive()
 	if cpu.PC != test.expected {
-	    t.Error("Test failed: opcode {}, Vx: {}, expected: {}, received: {}", test.opcode, test.vx, test.expected, cpu.PC)
+	    t.Errorf("Test failed: opcode %x, Vx: %x, expected: %x, received: %x", test.opcode, test.vx, test.expected, cpu.PC)
 	}
     }
 }
@@ -127,7 +127,7 @@ func TestCpuSix(t *testing.T) {
 	x := cpu.opcode & 0x0F00 >> 8
 	cpu.cpuSix()
 	if cpu.V[x] != test.expected {
-	    t.Error("Test failed: opcode {}, expected: {}, received: {}", test.opcode, test.expected, cpu.V[x])
+	    t.Errorf("Test failed: opcode %x, expected: %x, received: %x", test.opcode, test.expected, cpu.V[x])
 	}
     }
 }
@@ -139,9 +139,11 @@ func TestCpuSeven(t *testing.T) {
 	vx	    byte
 	kk	    byte
 	expected    byte
+	vf	    byte
     }{
-	{0x7450, 0x56, 0x10, 0x66},
-	{0x7450, 0x06, 0xB4, 0xBA},
+	{0x7410, 0x56, 0x10, 0x66, 0},
+	// {0x7410, 0xF0, 0x10, 0x00, 1},
+	{0x74B4, 0x06, 0xB4, 0xBA, 0},
     }
 
     for _, test := range tests {
@@ -150,8 +152,11 @@ func TestCpuSeven(t *testing.T) {
 	cpu.V[x] = test.vx
 	cpu.cpuSeven()
 	if cpu.V[x] != test.expected {
-	    t.Error("Test failed: opcode {}, Vx: {}, kk: {}, expected: {}, received: {}", test.opcode, test.vx, test.kk, test.expected, cpu.V[x])
+	    t.Errorf("Test failed: opcode %x, Vx: %x, kk: %x, expected: %x, received: %x", test.opcode, test.vx, test.kk, test.expected, cpu.V[x])
 	}
+	// if cpu.V[15] != test.vf {
+	//     t.Errorf("Test failed: VF %x, expected %x", cpu.V[15], test.vf)
+	// }
     }
 }
 
@@ -163,8 +168,8 @@ func TestCpuEightZero(t *testing.T) {
 	vy	    byte
 	expected    byte
     }{
-	{0x7450, 0x12, 0x34, 0x34},
-	{0x7B76, 0x76, 0x45, 0x45},
+	{0x8450, 0x12, 0x34, 0x34},
+	{0x8B70, 0x76, 0x45, 0x45},
     }
 
     for _, test := range tests {
@@ -175,7 +180,292 @@ func TestCpuEightZero(t *testing.T) {
 	cpu.V[y] = test.vy
 	cpu.cpuEightZero()
 	if cpu.V[x] != test.expected {
-	    t.Error("Test failed: opcode {}, Vx: {}, Vy: {}, expected: {}, received: {}", test.opcode, test.vx, test.vy, test.expected, cpu.V[x])
+	    t.Errorf("Test failed: opcode %x, Vx: %x, Vy: %x, expected: %x, received: %x", test.opcode, test.vx, test.vy, test.expected, cpu.V[x])
+	}
+    }
+}
+
+func TestCpuEightOne(t *testing.T) {
+    // 8xy1: OR Vx, Vy -set Vx = Vx OR Vy
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	vy	    byte
+	expected    byte
+    }{
+	{0x8451, 0x12, 0x34, 0x34},
+	{0x8B71, 0x76, 0x45, 0x45},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuEightZero()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: opcode %x, Vx: %x, Vy: %x, expected: %x, received: %x", test.opcode, test.vx, test.vy, test.expected, cpu.V[x])
+	}
+    }
+}
+
+func TestCpuEightTwo(t *testing.T) {
+    // 8xy2: AND V, Vy
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	vy	    byte
+	expected    byte
+    }{
+	{0x8452, 0x15, 0x34, 0x14},
+	{0x8B72, 0xB6, 0x57, 0x16},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuEightTwo()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, Vy: %x, expected: %x, received: %x", test.vx, test.vy, test.expected, cpu.V[x])
+	}
+    }
+}
+
+func TestCpuEightThree(t *testing.T) {
+    // 8xy3: XOR Vx, Vy
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	vy	    byte
+	expected    byte
+    }{
+	{0x8453, 0x15, 0x34, 0x21},
+	{0x8B73, 0xB6, 0x57, 0xE1},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuEightThree()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, Vy: %x, expected: %x, received: %x", test.vx, test.vy, test.expected, cpu.V[x])
+	}
+    }
+}
+
+func TestCpuEightFour(t *testing.T) {
+    // 8xy4: ADD Vx, Vy
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	vy	    byte
+	expected    byte
+	vf	    byte
+    }{
+	{0x8454, 0x15, 0x34, 0x49, 0},
+	{0x8B74, 0xC4, 0xC0, 0x84, 1},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuEightFour()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, Vy: %x, expected: %x, received: %x", test.vx, test.vy, test.expected, cpu.V[x])
+	}
+	if cpu.V[15] != test.vf {
+	    t.Errorf("Test failed: VF: %x, expected %x", cpu.V[15], test.vf)
+	}
+    }
+}
+
+
+func TestCpuEightFive(t *testing.T) {
+    // 8xy5: SUB Vx, Vy
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	vy	    byte
+	expected    byte
+	vf	    byte
+    }{
+	{0x8455, 0xC0, 0xC4, 0xFC, 0},
+	{0x8B75, 0xC4, 0xC0, 0x04, 1},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuEightFive()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, Vy: %x, expected: %x, received: %x", test.vx, test.vy, test.expected, cpu.V[x])
+	}
+	if cpu.V[15] != test.vf {
+	    t.Errorf("Test failed: VF: %x, expected %x", cpu.V[15], test.vf)
+	}
+    }
+}
+
+
+func TestCpuEightSix(t *testing.T) {
+    // 8xy6: SHR Vx
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	expected    byte
+	vf	    byte
+    }{
+	{0x8456, 0xC4, 0x62, 0},
+	{0x8B76, 0x31, 0x18, 1},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	cpu.V[x] = test.vx
+	cpu.cpuEightSix()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, expected: %x", cpu.V[x], test.expected)
+	}
+	if cpu.V[15] != test.vf {
+	    t.Errorf("Test failed: VF: %x, expected %x", cpu.V[15], test.vf)
+	}
+    }
+}
+
+func TestCpuEightSeven(t *testing.T) {
+    // 8xy5: SUBN Vx, Vy
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	vy	    byte
+	expected    byte
+	vf	    byte
+    }{
+	{0x8457, 0xC4, 0xC0, 0xFC, 0},
+	{0x8B77, 0xC0, 0xC4, 0x04, 1},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuEightSeven()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, Vy: %x, expected: %x, received: %x", test.vx, test.vy, test.expected, cpu.V[x])
+	}
+	if cpu.V[15] != test.vf {
+	    t.Errorf("Test failed: VF: %x, expected %x", cpu.V[15], test.vf)
+	}
+    }
+}
+
+func TestCpuEightE(t *testing.T) {
+    // 8xy6: SHL Vx
+    var tests = []struct {
+	opcode	    uint16
+	vx	    byte
+	expected    byte
+	vf	    byte
+    }{
+	{0x845E, 0xC4, 0x88, 1},
+	{0x8B7E, 0x18, 0x30, 0},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	x := cpu.opcode & 0x0F00 >> 8
+	cpu.V[x] = test.vx
+	cpu.cpuEightE()
+	if cpu.V[x] != test.expected {
+	    t.Errorf("Test failed: Vx: %x, expected: %x", cpu.V[x], test.expected)
+	}
+	if cpu.V[15] != test.vf {
+	    t.Errorf("Test failed: VF: %x, expected %x", cpu.V[15], test.vf)
+	}
+    }
+}
+
+func TestCpuNine(t *testing.T) {
+    // 9xy0: skip next instruction if Vx != Vy
+    var tests = []struct {
+	opcode	    uint16
+	pc	    uint16
+	vx	    byte
+	vy	    byte
+	expected    uint16
+    }{
+	{0x9450, 0x1234, 0xC4, 0xC0, 0x1236},
+	{0x9B70, 0x1234, 0xC4, 0xC4, 0x1234},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	cpu.PC = test.pc
+	x := cpu.opcode & 0x0F00 >> 8
+	y := cpu.opcode & 0x00F0 >> 4
+	cpu.V[x] = test.vx
+	cpu.V[y] = test.vy
+	cpu.cpuNine()
+	if cpu.PC != test.expected {
+	    t.Errorf("Test failed: Vx: %x, Vy: %x, expected: %x, received: %x", test.vx, test.vy, test.expected, cpu.PC)
+	}
+    }
+}
+
+func TestCpuA(t *testing.T) {
+    // Annn: LD I, nnn
+    var tests = []struct {
+	opcode	    uint16
+	expected    uint16
+    }{
+	{0xA450, 0x0450},
+	{0xAB70, 0x0B70},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	cpu.cpuA()
+	if cpu.I != test.expected {
+	    t.Errorf("Test failed: I: %x, expected: %x", cpu.I, test.expected)
+	}
+    }
+}
+
+func TestCpuB(t *testing.T) {
+    // Bnnn: JP V0, nnn
+    var tests = []struct {
+	opcode	    uint16
+	pc	    uint16
+	v0	    byte
+	expected    uint16
+    }{
+	{0xB450, 0x1234, 0xC4, 0x0514},
+	{0xBB70, 0x1234, 0xC4, 0x0C34},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	cpu.PC = test.pc
+	cpu.V[0] = test.v0
+	cpu.cpuB()
+	if cpu.PC != test.expected {
+	    t.Errorf("Test failed: opcode: %x, V0: %x, expected: %x, received: %x", test.opcode, test.v0, test.expected, cpu.PC)
 	}
     }
 }
