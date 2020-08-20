@@ -174,19 +174,21 @@ func (cpu *CPU) cpuEightSix() {
 func (cpu *CPU) cpuEightSeven() {
     // 8xy7: SUBN Vx, Vy - set Vx = Vy - Vx; VF = NOT borrow
     // Is this using - or + with two's complement?
-    if cpu.V[(cpu.opcode & 0x00F0) >> 4] > cpu.V[(cpu.opcode & 0x0F00) >> 8] {
+    var x byte = byte((cpu.opcode & 0x0F00) >> 8)
+    var y byte = byte((cpu.opcode & 0x00F0) >> 4)
+    if cpu.V[y] > cpu.V[x] {
 	cpu.V[15] = 1
     } else {
 	cpu.V[15] = 0
     }
-    var result byte = cpu.V[(cpu.opcode & 0x00F0) >> 4] - cpu.V[(cpu.opcode & 0x0F00 >> 8)]
-    cpu.V[(cpu.opcode & 0x0F00) >> 8] = result
+    var result byte = cpu.V[y] - cpu.V[x]
+    cpu.V[x] = result
 }
 
 func (cpu *CPU) cpuEightE() {
     // 8xyE: SHL Vx
     var x byte = byte(cpu.opcode & 0x0F00 >> 8)
-    cpu.V[15] = cpu.V[x] & 0x80
+    cpu.V[15] = cpu.V[x] & 0x80 >> 7
     cpu.V[x] = cpu.V[x] << 1
 }
 
@@ -210,7 +212,7 @@ func (cpu *CPU) cpuB() {
 func (cpu *CPU) cpuC() {
     // Cxkk: RND Vx, byte - Vx = gen rand numb 0-255 & kk
     rand.Seed(time.Now().UnixNano())
-    var rand byte = byte(rand.Intn(255) & 0x000F)
+    var rand byte = byte(rand.Intn(255))
     var kk byte = byte(cpu.opcode & 0x00FF)
     cpu.V[(cpu.opcode & 0x0F00) >> 8] = rand & kk
 }
