@@ -1,22 +1,28 @@
 package chip8
 
 import(
-    "github.com/veandco/go-sdl2/gfx"
+    //"github.com/veandco/go-sdl2/gfx"
     "github.com/veandco/go-sdl2/sdl"
 
     "fmt"
 )
 
-var display [2048]bool
+var Display [2048]byte
 
 // sdl window dimensions
-var winWidth, winHeight int32 = 64, 32
+// TODO: variable scaling factor?
+var winWidth, winHeight int32 = 64 * 8, 32 * 8
 var err error
 
 var gWindow *sdl.Window
-var gScreenSurface *sdl.Surface
+var gRenderer *sdl.Renderer
 
-func start() bool {
+var Quit bool
+
+
+// the following start and end functions are taken from Lazy Foo Production's 
+// SDL Tutorials found at http://lazyfoo.net
+func StartSDL() bool {
     // Initialization flag
     var success bool = true
 
@@ -31,17 +37,41 @@ func start() bool {
 	    fmt.Printf("Window could not be created! Error: %s\n", err)
 	    success = false
 	} else {
-	    // get Window surface
-	    gScreenSurface, err = gWindow.GetSurface()
+	    gRenderer, err = sdl.CreateRenderer(gWindow, -1, sdl.RENDERER_ACCELERATED)
+	    if err != nil {
+		fmt.Printf("Renderer could not be created! SDL Error: %s\n", err)
+	    }
 	}
     }
     return success
 }
 
-func loadMedia() bool {
-    // loading success flag
-    var success bool = true
+func End() {
+    gRenderer.Destroy()
+    gWindow.Destroy()
+
+    sdl.Quit()
 }
 
-func main() {
-    // the window we'll be rendering to
+
+
+func Render() {
+    gRenderer.SetDrawColor(0x00, 0x00, 0x00, 0xFF)
+    gRenderer.Clear()
+
+    // set every pixel to the right color
+    for i, pixel := range Display {
+        var y int32 = int32(8 * (i / 64))
+        var x int32 = int32(8 * (i % 64))
+        rect := sdl.Rect{x, y, 8, 8}
+        if pixel != 0 {
+        gRenderer.SetDrawColor(0xFF, 0xFF, 0xFF, 0xFF)
+        } else {
+        gRenderer.SetDrawColor(0x00, 0x00, 0x00, 0xFF)
+        }
+        gRenderer.FillRect(&rect)
+    }
+
+    gRenderer.Present()
+}
+
