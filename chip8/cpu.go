@@ -63,8 +63,14 @@ func (cpu *CPU) cpuZero() {
     switch(cpu.opcode & 0x00FF){
     case 0x00E0:
 	// Clears the screen
+	for i, _ := range Display {
+	    Display[i] = 0
+	}
     case 0x00EE:
 	// Returns from subroutine
+	cpu.PC = cpu.stack[cpu.sp]
+	cpu.sp--
+
     default:
 	// 0nnn: SYS addr
     }
@@ -228,18 +234,35 @@ func (cpu *CPU) cpuD() {
 	var curbyte byte = cpu.Read(cpu.I + uint16(h))
 	for w := byte(0); w < 8; w++ {
 	    if curbyte & 0x80 >> w != 0 {
-		if display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] != 0 {
+		if Display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] != 0 {
 		    cpu.V[15] = 1
 		}
-		display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] ^= 1
+		Display[(cpu.V[y] + h) * 64 + (cpu.V[x] + w)] ^= 1
 	    }
 	}
     }
 }
 
 func (cpu *CPU) cpuE() {
+    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
+    switch cpu.opcode & 0x00FF {
+    case 0x9E:
     // Ex9E: skip next instruction if key with the value of Vx is pressed
+	if keys[cpu.V[x]] {
+	    cpu.PC += 4
+	} else {
+	    cpu.PC += 2
+	}
+	break
     // ExA1: skip next instruction if key with the value of Vx is not pressed
+    case 0xA1:
+	if !keys[cpu.V[x]]{
+	    cpu.PC += 4
+	} else {
+	    cpu.PC += 2
+	}
+	break
+    }
 }
 
 func (cpu *CPU) cpuF() {
@@ -247,7 +270,13 @@ func (cpu *CPU) cpuF() {
 	case 0x07: // Fx07: LD Vx, DT - set Vx = delay timer value
 	    cpu.V[(cpu.opcode & 0x0F00) >> 8] = cpu.delay_timer
 	case 0x0A: // Fx0A: LD Vx, K - wait for a key press, store the key in Vx
-	    // TODO
+	    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
+	    var key int16
+	    for key := HandleInput(); key == -1; key = HandleInput() {
+		// wait
+	    }
+	    cpu.V[x] = byte(key)
+
 	case 0x15: // Fx15: Ld DT, Vx - set delay timer = Vx
 	    cpu.delay_timer = cpu.V[(cpu.opcode & 0x0F00) >> 8]
 	case 0x18: // Fx18: LD ST, Vx - set sound timer = Vx
@@ -255,9 +284,15 @@ func (cpu *CPU) cpuF() {
 	case 0x1E: // Fx1E: ADD I, Vx - I = I + Vx
 	    cpu.I += uint16(cpu.V[(cpu.opcode & 0x0F00) >> 8])
 	case 0x29: // Fx29: LD F, Vx - set I = location of sprite for digit Vx
-	    // TODO
+	    var fontStart uint16 = uint16(0x000)
+	    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
+	    var digit uint16 = uint16(cpu.V[x])
+	    cpu.I = fontStart + (5 * digit) // every digit is 5 byte long
 	case 0x33: // Fx33: LD B, Vx - store BCD of Vx in memory locations I, I+1, I+2
-	    // TODO
+	    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
+	    cpu.Write(cpu.I,	cpu.V[x]/100)
+	    cpu.Write(cpu.I+1,  (cpu.V[x]/10)%10)
+	    cpu.Write(cpu.I+2,  (cpu.V[x]%10))
 	case 0x55: // Fx55: LD [I], Vx - store registers V0 to Vx in memory 
 		//	starting at the address in I
 	    var x byte = byte((cpu.opcode & 0x0F00) >> 8)
