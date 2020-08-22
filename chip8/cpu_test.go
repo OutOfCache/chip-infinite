@@ -469,3 +469,38 @@ func TestCpuB(t *testing.T) {
 	}
     }
 }
+
+func TestCpuE(t *testing.T) {
+    var tests = []struct {
+	opcode	    uint16
+	pc	    uint16
+	vx	    byte
+	key	    bool
+	expected    uint16
+    }{
+	{0xE49E, 0x1234, 0x04, false, 0x1236},
+	{0xEB9E, 0x1234, 0x04, true,  0x1238},
+	{0xEBA1, 0x1234, 0x04, false, 0x1238},
+	{0xEBA1, 0x1234, 0x04, true,  0x1236},
+    }
+
+    for _, test := range tests {
+	cpu.opcode = test.opcode
+	cpu.PC = test.pc
+	var x byte = byte(test.opcode & 0x0F00 >> 8)
+	cpu.V[x] = test.vx
+	keys[test.vx] = test.key
+	cpu.cpuE()
+	if cpu.PC != test.expected {
+	    t.Errorf("Test failed: opcode: %x, Vx: %x, key: %t, expected: %x, received: %x", test.opcode, test.vx, test.key, test.expected, cpu.PC)
+	}
+    }
+}
+
+func TestCpuF(t *testing.T) {
+    // TODO
+    // var tests = []struct {
+    //     opcode	    uint16
+    //     expected    uint16
+    // }
+}
