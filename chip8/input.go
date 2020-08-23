@@ -29,7 +29,8 @@ const(
     KPF
 )
 
-func HandleInput() {
+func HandleInput() int {
+    var pressed int = -1 // for opcode 0xFx0A
     for i, _ := range keys {
 	keys[i] = false
     }
@@ -45,53 +46,70 @@ func HandleInput() {
 	    switch(keyCode) {
 	    case sdl.K_x:
 		keys[KPZero] = true
+		pressed = KPZero
 		break
 	    case sdl.K_1:
 		keys[KPOne] = true
+		pressed = KPOne
 		break
 	    case sdl.K_2:
 		keys[KPTwo] = true
+		pressed = KPTwo
 		break
 	    case sdl.K_3:
 		keys[KPThree] = true
+		pressed = KPThree
 		break
 	    case sdl.K_q:
 		keys[KPFour] = true
+		pressed = KPFour
 		break
 	    case sdl.K_w:
 		keys[KPFive] = true
+		pressed = KPFive
 		break
 	    case sdl.K_e:
 		keys[KPSix] = true
+		pressed = KPSix
 		break
 	    case sdl.K_a:
 		keys[KPSeven] = true
+		pressed = KPSeven
 		break
 	    case sdl.K_s:
 		keys[KPEight] = true
+		pressed = KPEight
 		break
 	    case sdl.K_d:
 		keys[KPNine] = true
+		pressed = KPNine
 		break
 	    case sdl.K_z:
 		keys[KPA] = true
+		pressed = KPA
 		break
 	    case sdl.K_c:
 		keys[KPB] = true
+		pressed = KPB
 		break
 	    case sdl.K_4:
 		keys[KPC] = true
+		pressed = KPC
 		break
 	    case sdl.K_r:
 		keys[KPD] = true
+		pressed = KPD
 		break
 	    case sdl.K_f:
 		keys[KPE] = true
+		pressed = KPE
 		break
 	    case sdl.K_v:
 		keys[KPF] = true
+		pressed = KPF
 		break
 	    }
 	}
     }
+    return pressed
 }
