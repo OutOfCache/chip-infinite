@@ -5,24 +5,21 @@ import (
     "time"
 )
 
-type CPU struct {
-    // registers
-    V [16]byte
-    I uint16
-    PC uint16
-    // memory
-    Memory
-    // stack
-    stack [16]uint16
-    sp byte
-    // instructions?
-    opcode uint16
-    // timer registers
-    Delay_timer byte
-    Sound_timer byte
-    ops [16]func()
-    opEight [16]func()
+const CLOCKSPEED = time.Second / 60 // timers count down at 60Hz
 
+type CPU struct {
+    V [16]byte		// registers V0-VF
+    I uint16		// registers I
+    PC uint16		// program counter
+    Memory		// memory
+    stack [16]uint16	// stack
+    sp byte		// stack pointer
+    opcode uint16	// current opcode
+    Delay_timer byte	// delay timer
+    Sound_timer byte	// sound timer
+    ops [16]func()	// possible opcodes
+    opEight [16]func()	// opcodes for 0x8xyz
+    Drawflag bool	// shows whenever sprites have been drawn to the display
 }
 
 
@@ -56,7 +53,6 @@ func NewCPU() *CPU{
     cpu.ops = [16]func(){
         cpu.cpuZero, cpu.cpuOne, cpu.cpuTwo, cpu.cpuThree,
 	cpu.cpuFour, cpu.cpuFive, cpu.cpuSix, cpu.cpuSeven,
-        // cpu.cpuEight[(cpu.opcode & 0x000F)], cpu.cpuNine, cpu.cpuA, cpu.cpuB,
         cpu.cpuEight, cpu.cpuNine, cpu.cpuA, cpu.cpuB,
 	cpu.cpuC, cpu.cpuD, cpu.cpuE, cpu.cpuF,
     }
@@ -66,6 +62,7 @@ func NewCPU() *CPU{
 
 // fetch instruction
 func (cpu *CPU) Fetch() {
+    cpu.Drawflag = false
     cpu.opcode = uint16(cpu.Read(cpu.PC)) << 8 + uint16(cpu.Read(cpu.PC + 1))
 }
 // decode and execute opcode
@@ -83,6 +80,7 @@ func (cpu *CPU) cpuZero() {
 	for i, _ := range Display {
 	    Display[i] = 0
 	}
+	cpu.Drawflag = true
 	cpu.PC += 2
     case 0x00EE:
 	// Returns from subroutine
@@ -276,6 +274,8 @@ func (cpu *CPU) cpuD() {
     var y byte = byte((cpu.opcode & 0x00F0) >> 4)
     var n byte = byte((cpu.opcode & 0x000F))
 
+    cpu.V[15] = 0
+
     for h := 0; h < int(n); h++ {
 	var curbyte byte = cpu.Read(cpu.I + uint16(h))
 	for w := 0; w < 8; w++ {
@@ -288,6 +288,7 @@ func (cpu *CPU) cpuD() {
 	    }
 	}
     }
+    cpu.Drawflag = true
     cpu.PC += 2
 }
 
