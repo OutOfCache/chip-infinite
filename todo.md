@@ -14,7 +14,7 @@
   * [ ] [Laying the Ground For An Emulator](http://www.multigesture.net/wp-content/uploads/mirror/zenogais/GroundWork.html) 
   * [ ] [Dynamic Recompiler](http://www.multigesture.net/wp-content/uploads/mirror/zenogais/Dynamic%20Recompiler.html)
   * [x] [Array of Function Pointers](http://www.multigesture.net/wp-content/uploads/mirror/zenogais/FunctionPointers.htm) 
-* [ ] read [Zilmar's Emubook](http://emubook.emulation64.com/)
+* [x] read [Zilmar's Emubook](http://emubook.emulation64.com/)
 
 # General 
 * [x] write Memory
@@ -22,7 +22,7 @@
 * [x] write Game Loop
 * [x] write Graphics
 * [ ] handle Input
-* [ ] handle proper timing for timers (60Hz)
+* [x] handle proper timing for timers (60Hz)
 * [ ] write Debugger
 * [ ] test roms  
   * [x] BC test rom
@@ -57,7 +57,11 @@
   * [x] Lesson 06
   * [x] Lesson 07
   * [x] Lesson 08
-  * [ ] Lesson 11
+  * [x] Lesson 09
+  * [x] Lesson 10
+  * [x] Lesson 11
+  * [x] Lesson 12
+  * [x] Lesson 13
   * [ ] Lesson 18
   * [ ] Lesson 19
   * [ ] Lesson 21
@@ -68,4 +72,4 @@
 * [ ] improve Input handling
 
 # Audio
-* [x] buzzer sound (although I cheated...)
+* [ ] buzzer sound

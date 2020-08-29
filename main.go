@@ -5,6 +5,7 @@ import (
     "fmt"
     "io/ioutil"
     "os"
+    "time"
 )
 
 var cpu *chip8.CPU
@@ -38,48 +39,42 @@ func loadProgram() {
 
 
 func main() {
+
     // set up
-
-    cpu := initialize()
+    cpu = initialize()
     loadProgram()
-    //if len(os.Args) != 2 {
-    //    fmt.Println("Usage: go run main.go path/to/rom")
-    //}
-    //var path string = os.Args[1]
+    //ticker := time.NewTicker(chip8.CLOCKSPEED)	// 60Hz "clock speed"
 
-    //rom, err := ioutil.ReadFile(path)
-    //if err != nil {
-    //    fmt.Println("File could not be read")
-    //    fmt.Println(err)
-    //    os.Exit(2)
-    //}
-
-    //for i, buffer := range rom {
-    //    cpu.Write(uint16(0x200 + i), buffer)
-    //}
-
+    now := time.Now()
     chip8.Quit = false
     if !chip8.StartSDL() {
         fmt.Println("Failed to initialize")
     } else {
 	for !chip8.Quit{
-	    cpu.Fetch()
-	    cpu.Decode()
+		cpu.Fetch()
+		cpu.Decode()
 
-	    if cpu.Delay_timer > 0 {
-		cpu.Delay_timer--
-	    }
-
-	    if cpu.Sound_timer > 0 {
-		if cpu.Sound_timer == 1 {
-		    fmt.Println("BEEP")
+	    if time.Since(now) >= chip8.CLOCKSPEED {
+		now = time.Now()
+		if cpu.Delay_timer > 0 {
+		    cpu.Delay_timer--
 		}
-		cpu.Sound_timer--
+
+		if cpu.Sound_timer > 0 {
+		    if cpu.Sound_timer == 1 {
+		        fmt.Println("BEEP")
+		    }
+		    cpu.Sound_timer--
+		}
 	    }
 
 
 	    chip8.HandleInput()
-	    chip8.Render()
+	    if cpu.Drawflag {
+		chip8.Render()
+	    } else {
+		time.Sleep(time.Microsecond * 900) // reduce CPU usage and speed of emulation
+	    }
 	}
     }
     chip8.End()
