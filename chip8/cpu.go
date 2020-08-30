@@ -321,7 +321,7 @@ func (cpu *CPU) cpuF() {
 	case 0x0A: // Fx0A: LD Vx, K - wait for a key press, store the key in Vx
 	    var x byte = byte(cpu.opcode & 0x0F00 >> 8)
 	    var key int16
-	    for key := HandleInput(); key == -1; key = HandleInput() {
+	    for key := waitForKey(); key == -1; key = waitForKey() {
 		// wait
 	    }
 	    cpu.V[x] = byte(key)
