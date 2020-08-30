@@ -297,7 +297,7 @@ func (cpu *CPU) cpuE() {
     switch cpu.opcode & 0x00FF {
     case 0x9E:
     // Ex9E: skip next instruction if key with the value of Vx is pressed
-	if keys[cpu.V[x]] {
+	if Keys[cpu.V[x]] {
 	    cpu.PC += 4
 	} else {
 	    cpu.PC += 2
@@ -305,7 +305,7 @@ func (cpu *CPU) cpuE() {
 	break
     // ExA1: skip next instruction if key with the value of Vx is not pressed
     case 0xA1:
-	if !keys[cpu.V[x]]{
+	if !Keys[cpu.V[x]]{
 	    cpu.PC += 4
 	} else {
 	    cpu.PC += 2

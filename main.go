@@ -68,7 +68,6 @@ func main() {
 		}
 	    }
 
-
 	    chip8.HandleInput()
 	    if cpu.Drawflag {
 		chip8.Render()
