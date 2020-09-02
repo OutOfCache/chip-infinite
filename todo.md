@@ -1,5 +1,4 @@
 # Preparation
-
 ## Mandatory
 
 * [x] research the emulation process
@@ -21,17 +20,11 @@
 * [x] write CPU
 * [x] write Game Loop
 * [x] write Graphics
-* [ ] handle Input
+* [x] handle Input
 * [x] handle proper timing for timers (60Hz)
 * [ ] write Debugger
-* [ ] test roms  
-  * [x] BC test rom
-  * [ ] PONG(2)  
-    Technically works, but the input handling is sluggish
-  * [ ] Breakout/Brix  
-    Loads graphics, but won't let me play (timing issue?)
-  * [ ] Tetris  
-    Does not load graphics properly, blocks seem to be stuck at the top and don't move down but continuously spawn? Also the score flashes in and out of existance
+* [ ] dynamic recompilation?
+* [x] test roms  
 
 # CPU
 * [x] implement instructions
@@ -48,7 +41,7 @@
 * [x] research how to implement graphics
 * [x] research SDL
 * [x] set up screen (64x32 = 2048 px, bw, boolean)
-* [ ] read [Lazy Foo's Tutorials](http://lazyfoo.net/tutorials/SDL/)  
+* [x] read [Lazy Foo's Tutorials](http://lazyfoo.net/tutorials/SDL/)  
   * [x] Lesson 01
   * [x] Lesson 02
   * [x] Lesson 03
@@ -62,14 +55,16 @@
   * [x] Lesson 11
   * [x] Lesson 12
   * [x] Lesson 13
-  * [ ] Lesson 18
-  * [ ] Lesson 19
-  * [ ] Lesson 21
+  * [x] Lesson 14
+  * [x] Lesson 15
+  * [x] Lesson 16
+  * [x] Lesson 17
+  * [x] Lesson 18
 
 # Input
 * [x] set up hex based keypad
 * [x] set up input.go
-* [ ] improve Input handling
+* [x] improve Input handling
 
 # Audio
-* [ ] buzzer sound
+* [x] buzzer sound
