@@ -7,6 +7,9 @@ import (
 	"fmt"
 )
 
+// Display represents the 64x32 display as a one-dimensional array, with
+// Display[0] being the pixel in the top left corner and Display[2047]
+// being the pixel in the bottom right
 var Display [2048]byte
 
 // sdl window dimensions
@@ -17,6 +20,8 @@ var err error
 var gWindow *sdl.Window
 var gRenderer *sdl.Renderer
 
+// Quit controls whether we want to exit the main loop and the program
+// TODO: get rid of Quit to avoid unnecessary comparison in main loop
 var Quit bool
 
 var fontset [80]byte = [80]byte{
@@ -38,8 +43,11 @@ var fontset [80]byte = [80]byte{
 	0xF0, 0x80, 0xF0, 0x80, 0x80, // F
 }
 
+// StartSDL initializes SDL and creates the window and returns true if it
+// succeeded and returns false if there was and error
 // the following start and end functions are taken from Lazy Foo Production's
 // SDL Tutorials found at http://lazyfoo.net
+// TODO: use log instead and not so many if-else statements
 func StartSDL() bool {
 	// Initialization flag
 	var success bool = true
@@ -64,6 +72,7 @@ func StartSDL() bool {
 	return success
 }
 
+// End frees the resources needed by sdl and quits sdl entirely
 func End() {
 	gRenderer.Destroy()
 	gWindow.Destroy()
@@ -73,6 +82,8 @@ func End() {
 	sdl.Quit()
 }
 
+// Render draws an 8x8 rectangle on the screen for every pixel
+// and updates the screen
 func Render() {
 	gRenderer.SetDrawColor(0x00, 0x00, 0x00, 0xFF)
 	gRenderer.Clear()

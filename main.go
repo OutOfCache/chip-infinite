@@ -13,7 +13,7 @@ var cpu *chip8.CPU
 func initialize() *chip8.CPU {
 	cpu = chip8.NewCPU()
 
-	for i, _ := range chip8.Display {
+	for i := range chip8.Display {
 		chip8.Display[i] = 0
 	}
 	return cpu
@@ -38,11 +38,9 @@ func loadProgram() {
 }
 
 func main() {
-
 	// set up
 	cpu = initialize()
 	loadProgram()
-	//ticker := time.NewTicker(chip8.CLOCKSPEED)	// 60Hz "clock speed"
 
 	now := time.Now()
 	chip8.Quit = false
@@ -62,7 +60,6 @@ func main() {
 
 				if cpu.Sound_timer > 0 {
 					if cpu.Sound_timer == 1 {
-						//fmt.Println("boop")
 						chip8.PlayBeep()
 					}
 					cpu.Sound_timer--

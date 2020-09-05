@@ -1,7 +1,7 @@
 package chip8
 
 // typedef unsigned char Uint8;
-// void SquareWave(void *userdata, Uint8 *stream, int len);
+// void squareWave(void *userdata, Uint8 *stream, int len);
 import "C"
 import (
 	"fmt"
@@ -26,8 +26,8 @@ var currentSample uint32
 var device sdl.AudioDeviceID
 var spec *sdl.AudioSpec
 
-//export SquareWave
-func SquareWave(userdata unsafe.Pointer, stream *C.Uint8, length C.int) {
+//export squareWave
+func squareWave(userdata unsafe.Pointer, stream *C.Uint8, length C.int) {
 	n := int(length)
 	hdr := reflect.SliceHeader{Data: uintptr(unsafe.Pointer(stream)), Len: n, Cap: n}
 	buf := *(*[]C.Uint8)(unsafe.Pointer(&hdr))
@@ -42,13 +42,15 @@ func SquareWave(userdata unsafe.Pointer, stream *C.Uint8, length C.int) {
 	}
 }
 
+// InitAudio initializes the audio device and the SDL AudioSpec
+// that will play a square wave
 func InitAudio() {
 	spec = &sdl.AudioSpec{
 		Freq:     sampleHz,
 		Format:   sdl.AUDIO_U8,
 		Channels: 2,
 		Samples:  totalSamples,
-		Callback: sdl.AudioCallback(C.SquareWave),
+		Callback: sdl.AudioCallback(C.squareWave),
 	}
 
 	device, err = sdl.OpenAudioDevice("", false, spec, nil, sdl.AUDIO_ALLOW_ANY_CHANGE)
@@ -58,19 +60,13 @@ func InitAudio() {
 	}
 }
 
+// PlayBeep plays the square wave for 100 milliseconds and then pauses the device
 func PlayBeep() {
 	currentSample = 0
-
-	//InitAudio()
 
 	for currentSample < totalSamples {
 		sdl.PauseAudioDevice(device, false)
 	}
 
 	sdl.PauseAudioDevice(device, true)
-	//sdl.CloseAudioDevice(device)
-
-	//if currentSample > totalSamples {
-	//	return
-	//}
 }
