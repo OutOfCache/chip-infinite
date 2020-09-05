@@ -45,8 +45,8 @@ func NewCPU() *CPU {
 		cpu.Write(uint16(i), font)
 	}
 
-	cpu.Delay_timer = 0xFF
-	cpu.Sound_timer = 0xFF
+	cpu.Delaytimer = 0xFF
+	cpu.Soundtimer = 0xFF
 
 	cpu.opEight = [16]func(){
 		cpu.cpuEightZero, cpu.cpuEightOne, cpu.cpuEightTwo, cpu.cpuEightThree,
@@ -297,7 +297,7 @@ func (cpu *CPU) cpuE() {
 	switch cpu.opcode & 0x00FF {
 	case 0x9E:
 		// Ex9E: skip next instruction if key with the value of Vx is pressed
-		if Keys[cpu.V[x]] {
+		if keys[cpu.V[x]] {
 			cpu.PC += 4
 		} else {
 			cpu.PC += 2
@@ -305,7 +305,7 @@ func (cpu *CPU) cpuE() {
 		break
 	// ExA1: skip next instruction if key with the value of Vx is not pressed
 	case 0xA1:
-		if !Keys[cpu.V[x]] {
+		if !keys[cpu.V[x]] {
 			cpu.PC += 4
 		} else {
 			cpu.PC += 2
@@ -317,7 +317,7 @@ func (cpu *CPU) cpuE() {
 func (cpu *CPU) cpuF() {
 	switch cpu.opcode & 0x00FF {
 	case 0x07: // Fx07: LD Vx, DT - set Vx = delay timer value
-		cpu.V[(cpu.opcode&0x0F00)>>8] = cpu.Delay_timer
+		cpu.V[(cpu.opcode&0x0F00)>>8] = cpu.Delaytimer
 	case 0x0A: // Fx0A: LD Vx, K - wait for a key press, store the key in Vx
 		var x byte = byte(cpu.opcode & 0x0F00 >> 8)
 		var key int16
@@ -327,9 +327,9 @@ func (cpu *CPU) cpuF() {
 		cpu.V[x] = byte(key)
 
 	case 0x15: // Fx15: Ld DT, Vx - set delay timer = Vx
-		cpu.Delay_timer = cpu.V[(cpu.opcode&0x0F00)>>8]
+		cpu.Delaytimer = cpu.V[(cpu.opcode&0x0F00)>>8]
 	case 0x18: // Fx18: LD ST, Vx - set sound timer = Vx
-		cpu.Sound_timer = cpu.V[(cpu.opcode&0x0F00)>>8]
+		cpu.Soundtimer = cpu.V[(cpu.opcode&0x0F00)>>8]
 	case 0x1E: // Fx1E: ADD I, Vx - I = I + Vx
 		cpu.I += uint16(cpu.V[(cpu.opcode&0x0F00)>>8])
 	case 0x29: // Fx29: LD F, Vx - set I = location of sprite for digit Vx

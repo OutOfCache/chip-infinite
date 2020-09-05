@@ -10,7 +10,7 @@ type Memory struct {
 }
 
 // Read takes an adress and returns the value stored at that adress
-func (mem *memory) Read(adr uint16) byte {
+func (mem *Memory) Read(adr uint16) byte {
 	return mem.Memory[adr]
 }
 

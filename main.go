@@ -44,6 +44,7 @@ func main() {
 
 	now := time.Now()
 	chip8.Quit = false
+	// TODO: Fix this mess
 	if !chip8.StartSDL() {
 		fmt.Println("Failed to initialize")
 	} else {
@@ -54,15 +55,15 @@ func main() {
 
 			if time.Since(now) >= chip8.CLOCKSPEED {
 				now = time.Now()
-				if cpu.Delay_timer > 0 {
-					cpu.Delay_timer--
+				if cpu.Delaytimer > 0 {
+					cpu.Delaytimer--
 				}
 
-				if cpu.Sound_timer > 0 {
-					if cpu.Sound_timer == 1 {
+				if cpu.Soundtimer > 0 {
+					if cpu.Soundtimer == 1 {
 						chip8.PlayBeep()
 					}
-					cpu.Sound_timer--
+					cpu.Soundtimer--
 				}
 			}
 
