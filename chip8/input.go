@@ -2,6 +2,7 @@ package chip8
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
+	"os"
 )
 
 var keys [16]bool
@@ -14,7 +15,8 @@ func HandleInput() {
 	for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
 		switch e.(type) {
 		case *sdl.QuitEvent:
-			Quit = true
+			End()
+			os.Exit(0)
 		}
 		currentKeys := sdl.GetKeyboardState()
 		keys[0x0] = currentKeys[sdl.SCANCODE_X] == 1
@@ -42,7 +44,8 @@ func waitForKey() int {
 	for e := sdl.PollEvent(); e != nil; e = sdl.PollEvent() {
 		switch t := e.(type) {
 		case *sdl.QuitEvent:
-			Quit = true
+			End()
+			os.Exit(0)
 		case *sdl.KeyboardEvent:
 			keycode := t.Keysym.Sym
 

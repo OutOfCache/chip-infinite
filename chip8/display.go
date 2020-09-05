@@ -1,8 +1,8 @@
 package chip8
 
 import (
-	//"github.com/veandco/go-sdl2/gfx"
 	"github.com/veandco/go-sdl2/sdl"
+	"os"
 
 	"fmt"
 )
@@ -47,29 +47,24 @@ var fontset [80]byte = [80]byte{
 // succeeded and returns false if there was and error
 // the following start and end functions are taken from Lazy Foo Production's
 // SDL Tutorials found at http://lazyfoo.net
-// TODO: use log instead and not so many if-else statements
-func StartSDL() bool {
-	// Initialization flag
-	var success bool = true
-
+// TODO: use log instead?
+func StartSDL() {
 	// Initialize SDL
 	if err = sdl.Init(sdl.INIT_VIDEO | sdl.INIT_AUDIO); err != nil {
 		fmt.Printf("SDL could not initialize! Error: %s\n", err)
-		success = false
-	} else {
-		// create Window
-		gWindow, err = sdl.CreateWindow("Chip 8", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winWidth, winHeight, sdl.WINDOW_SHOWN)
-		if err != nil {
-			fmt.Printf("Window could not be created! Error: %s\n", err)
-			success = false
-		} else {
-			gRenderer, err = sdl.CreateRenderer(gWindow, -1, sdl.RENDERER_ACCELERATED)
-			if err != nil {
-				fmt.Printf("Renderer could not be created! SDL Error: %s\n", err)
-			}
-		}
+		os.Exit(3) // 3 is for SDL errors now
 	}
-	return success
+	// create Window
+	gWindow, err = sdl.CreateWindow("Chip 8", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winWidth, winHeight, sdl.WINDOW_SHOWN)
+	if err != nil {
+		fmt.Printf("Window could not be created! Error: %s\n", err)
+		os.Exit(3)
+	}
+	gRenderer, err = sdl.CreateRenderer(gWindow, -1, sdl.RENDERER_ACCELERATED)
+	if err != nil {
+		fmt.Printf("Renderer could not be created! SDL Error: %s\n", err)
+		os.Exit(3)
+	}
 }
 
 // End frees the resources needed by sdl and quits sdl entirely

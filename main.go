@@ -43,36 +43,31 @@ func main() {
 	loadProgram()
 
 	now := time.Now()
-	chip8.Quit = false
-	// TODO: Fix this mess
-	if !chip8.StartSDL() {
-		fmt.Println("Failed to initialize")
-	} else {
-		chip8.InitAudio()
-		for !chip8.Quit {
-			cpu.Fetch()
-			cpu.Decode()
+	chip8.StartSDL()
+	chip8.InitAudio()
+	for {
+		cpu.Fetch()
+		cpu.Decode()
 
-			if time.Since(now) >= chip8.CLOCKSPEED {
-				now = time.Now()
-				if cpu.Delaytimer > 0 {
-					cpu.Delaytimer--
-				}
-
-				if cpu.Soundtimer > 0 {
-					if cpu.Soundtimer == 1 {
-						chip8.PlayBeep()
-					}
-					cpu.Soundtimer--
-				}
+		if time.Since(now) >= chip8.CLOCKSPEED {
+			now = time.Now()
+			if cpu.Delaytimer > 0 {
+				cpu.Delaytimer--
 			}
 
-			chip8.HandleInput()
-			if cpu.Drawflag {
-				chip8.Render()
-			} else {
-				time.Sleep(time.Microsecond * 900) // reduce CPU usage and speed of emulation
+			if cpu.Soundtimer > 0 {
+				if cpu.Soundtimer == 1 {
+					chip8.PlayBeep()
+				}
+				cpu.Soundtimer--
 			}
+		}
+
+		chip8.HandleInput()
+		if cpu.Drawflag {
+			chip8.Render()
+		} else {
+			time.Sleep(time.Microsecond * 900) // reduce CPU usage and speed of emulation
 		}
 	}
 	chip8.End()
