@@ -31,6 +31,7 @@
   * [x] set up registers
   * [x] learn how to properly write tests (in go specifically)
   * [x] write tests for instructions
+  * [x] rewrite cpu so it does not use cpu struct (because that is unnecessary)
 
 # Memory
   * [x] implement memory map
