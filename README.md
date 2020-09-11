@@ -1,6 +1,31 @@
 # chip-infinite
 Yet another Chip-8 emulator made purely for educational purposes
 
+## Build Instructions
+
+### Install Dependencies
+SDL2 is required for this program.
+
+Then clone this repository and build the executable:
+```
+git clone https://github.com/OutOfCache/chip-infinite.git
+cd chip-infinite
+go build
+```
+
+## Usage
+```
+./chip-infinite /path/to/rom
+```
+
+## Future Features
+* [ ] debugger
+* [ ] support for SUPER-CHIP
+* [ ] command line options  
+  * [ ] screen size
+  * [ ] configure button layout
+* [ ] GUI
+
 ## Resources
 ### Chip-8 and its emulation
 * [Wikipedia](http://en.wikipedia.org/wiki/CHIP-8)
