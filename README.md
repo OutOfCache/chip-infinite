@@ -1,6 +1,8 @@
 # chip-infinite
 Yet another Chip-8 emulator made purely for educational purposes
 
+![demo of PONG playing in emulator](demo/chip8-demo.gif)
+
 ## Build Instructions
 
 ### Install Dependencies
