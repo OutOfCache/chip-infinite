@@ -21,6 +21,7 @@ go build
 ```
 
 ## Future Features
+* [ ] double buffering
 * [ ] debugger
 * [ ] support for SUPER-CHIP
 * [ ] command line options  
